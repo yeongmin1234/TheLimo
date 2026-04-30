@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PROJECT_DIR="${1:-/root/배송예약_개발}"
+PROJECT_DIR="${1:-/root/TheLimo}"
 SERVICE_PATH="/etc/systemd/system/limo.service"
 SERVICE_TEMPLATE="$PROJECT_DIR/deploy/limo.service"
 
@@ -23,7 +23,7 @@ fi
 
 if [[ -z "${UVICORN_PATH:-}" ]]; then
   echo "uvicorn not found. Install dependencies or create a venv first." >&2
-  echo "Example: python3 -m venv venv && ./venv/bin/pip install fastapi uvicorn" >&2
+  echo "Example: python3 -m venv venv && ./venv/bin/pip install -r requirements.txt" >&2
   exit 1
 fi
 
