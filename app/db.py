@@ -1,5 +1,6 @@
 import aiomysql
 from aiomysql.cursors import DictCursor
+from app.logger import logger
 from app.config import (
     DB_CHARSET,
     DB_HOST,
@@ -13,6 +14,41 @@ from app.config import (
 )
 
 db_pool = None
+
+async def ensure_reservation_info_schema():
+    if db_pool is None:
+        return
+
+    async with db_pool.acquire() as conn:
+        async with conn.cursor() as cursor:
+            await cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS reservation_info (
+                    ord_code VARCHAR(100) NOT NULL PRIMARY KEY,
+                    reservation_date DATE NULL,
+                    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+                        ON UPDATE CURRENT_TIMESTAMP
+                ) CHARACTER SET utf8 COLLATE utf8_unicode_ci
+                """
+            )
+
+            await cursor.execute(
+                """
+                SELECT COUNT(*) AS cnt
+                FROM information_schema.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE()
+                  AND TABLE_NAME = 'reservation_info'
+                  AND COLUMN_NAME = 'reservation_date'
+                """
+            )
+            row = await cursor.fetchone()
+            if not row or row["cnt"] == 0:
+                await cursor.execute(
+                    """
+                    ALTER TABLE reservation_info
+                    ADD COLUMN reservation_date DATE NULL
+                    """
+                )
 
 async def init_db_pool():
     global db_pool
@@ -30,6 +66,10 @@ async def init_db_pool():
             maxsize=DB_POOL_MAX_SIZE,
             pool_recycle=DB_POOL_RECYCLE        # [주의] aiomysql 구버전(0.0.21 이하)을 사용중이시면 이 옵션 때문에 에러가 날 수 있습니다. 에러가 나면 이 줄을 지워주세요.
         )
+        try:
+            await ensure_reservation_info_schema()
+        except Exception:
+            logger.error("reservation_info 스키마 확인 중 에러 발생", exc_info=True)
 
 async def close_db_pool():
     global db_pool

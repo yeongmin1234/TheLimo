@@ -5,6 +5,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from app.db import init_db_pool, close_db_pool, get_db
 from datetime import datetime
+from pymysql.err import OperationalError
 import time
 import os
 import re
@@ -61,7 +62,10 @@ ORDER_FROM = """
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup: 커넥션 풀 생성
-    await init_db_pool()
+    try:
+        await init_db_pool()
+    except Exception:
+        logger.error("DB 초기 연결에 실패했습니다. 요청 시 다시 연결을 시도합니다.", exc_info=True)
     yield
     # Shutdown: 커넥션 풀 종료
     await close_db_pool()
@@ -72,6 +76,15 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
+
+@app.exception_handler(OperationalError)
+async def db_operational_error_handler(request: Request, exc: OperationalError):
+    logger.error("DB 연결 중 에러 발생", exc_info=True)
+    return HTMLResponse(
+        "<h1>데이터베이스 연결 오류가 발생했습니다.</h1>"
+        "<p>DB 서버와 포트 설정을 확인해주세요.</p>",
+        status_code=503,
+    )
 
 def extract_reservation_date(product):
     if not product:
@@ -547,13 +560,13 @@ async def render_order_list(
         rows = group_orders(raw_rows) if group_rows else add_status_metadata(raw_rows)
 
         return templates.TemplateResponse(
-            request=request,
-            name=template_name,
-            context={
+            template_name,
+            {
                 "rows": rows,
                 "active_page": active_page,
                 "cache_key": cache_key,
                 "progress_tab": progress_tab,
+                "request": request,
             }
         )
 
@@ -592,9 +605,8 @@ async def home(request: Request, conn=Depends(get_db)):
             print("home cache hit")
 
         return templates.TemplateResponse(
-            request=request,
-            name="index.html",
-            context={**data, "active_page": "home", "cache_key": "home"}
+            "index.html",
+            {**data, "active_page": "home", "cache_key": "home", "request": request}
         )
 
     except Exception as e:
@@ -654,13 +666,13 @@ async def progress_reserved(request: Request, conn=Depends(get_db)):
             print("progress_reserved cache hit")
 
         return templates.TemplateResponse(
-            request=request,
-            name="progress.html",
-            context={
+            "progress.html",
+            {
                 "rows": rows,
                 "active_page": "progress",
                 "cache_key": "progress_reserved",
                 "progress_tab": "reserved",
+                "request": request,
             }
         )
 
@@ -853,12 +865,12 @@ async def order_detail(ord_code: str, request: Request, conn=Depends(get_db)):
             rows = add_status_metadata(await fetch_order_detail_rows(cursor, ord_code))
 
             return templates.TemplateResponse(
-                request=request,
-                name="order_detail.html",
-                context={
+                "order_detail.html",
+                {
                     "ord_code": ord_code,
                     "rows": rows,
                     "active_page": "",
+                    "request": request,
                 }
             )
 
