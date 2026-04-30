@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}The Limo 배송 대시보드{% endblock %}
+{% block heading %}The Limo 배송 대시보드{% endblock %}
+{% block head_extra %}
+    <meta http-equiv="refresh" content="60">
+{% endblock %}
+
+{% block content %}
+        <div class="summary">
+            <div class="card">
+                <h3>진행중</h3>
+                <div class="count">{{ progress_count }}</div>
+                <div class="small">현재 처리 대기 주문 기준</div>
+            </div>
+
+            <div class="card">
+                <h3>완료 (주문 기준)</h3>
+                <div class="count">{{ completed_count }}</div>
+                <div class="small">최근 3개월 기준</div>
+            </div>
+
+            <div class="card">
+                <h3>취소 (주문 기준)</h3>
+                <div class="count">{{ cancelled_count }}</div>
+                <div class="small">최근 3개월 기준</div>
+            </div>
+        </div>
+
+        <div class="dashboard-list">
+            <div class="section full-width">
+                <h2>진행중 최근 20건</h2>
+                <div class="subnav main-progress-tabs" aria-label="메인 진행중 구분">
+                    <button type="button" class="active" data-main-progress-tab="reservation">예약</button>
+                    <button type="button" data-main-progress-tab="progress">진행중</button>
+                </div>
+                <div class="main-progress-panel" data-main-progress-panel="reservation">
+                    {% with rows = reservation_list, reservation_mode = True %}
+                        {% include "main_progress_table.html" %}
+                    {% endwith %}
+                </div>
+                <div class="main-progress-panel" data-main-progress-panel="progress" hidden>
+                    {% with rows = progress_list %}
+                        {% include "main_progress_table.html" %}
+                    {% endwith %}
+                </div>
+            </div>
+        </div>
+{% endblock %}

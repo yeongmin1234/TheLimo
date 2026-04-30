@@ -1,0 +1,78 @@
+<table>
+    <thead>
+        <tr>
+            {% if reservation_mode %}
+            <th>예약일</th>
+            <th>주문일</th>
+            <th>매장명</th>
+            <th>상품명</th>
+            <th>상품 수</th>
+            <th>연락처</th>
+            <th>주문자</th>
+            <th>운송장번호</th>
+            <th>상세</th>
+            {% else %}
+            <th>주문일</th>
+            <th>예약일</th>
+            <th>매장명</th>
+            <th>상품 수</th>
+            <th>주문자</th>
+            <th>주소</th>
+            <th>상태</th>
+            <th>상세</th>
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in rows %}
+        <tr class="order-row{% if row.row_class %} {{ row.row_class }}{% endif %}" data-order-code="{{ row.ord_code }}" data-sale-id="{{ row.sale_id or '' }}">
+            {% if reservation_mode %}
+            <td>
+                <div class="reservation-display" data-order-code="{{ row.ord_code }}">
+                    {% if row.reservation_date %}
+                        <span class="reservation-date">{{ row.reservation_date }}</span>
+                    {% else %}
+                        <span>-</span>
+                    {% endif %}
+                </div>
+            </td>
+            <td>{{ row.ord_date|string|replace(" 00:00:00", "")|truncate(10, True, "") }}</td>
+            <td>{{ row.shp_name or '-' }}</td>
+            <td class="product-cell">{{ row.gd_name or '-' }}</td>
+            <td>{{ row.item_count }}건</td>
+            <td>{{ row.CUSTOMER_MOBILE or row.dlv_tel_1 or '-' }}</td>
+            <td>{{ row.CUSTOMER or '-' }}</td>
+            <td>
+                <form class="inline-tracking-form" data-order-code="{{ row.ord_code }}" data-sale-id="{{ row.sale_id }}">
+                    <input type="text" name="tracking_number" maxlength="30" value="" aria-label="운송장번호">
+                    <button type="submit">저장</button>
+                    <div class="inline-message" aria-live="polite"></div>
+                </form>
+            </td>
+            <td><button type="button" class="detail-button" data-order-code="{{ row.ord_code }}">보기</button></td>
+            {% else %}
+            <td>{{ row.ord_date }}</td>
+            <td>
+                <div class="reservation-display" data-order-code="{{ row.ord_code }}">
+                    {% if row.reservation_date %}
+                        <span class="reservation-date">{{ row.reservation_date }}</span>
+                    {% else %}
+                        <span>-</span>
+                    {% endif %}
+                </div>
+            </td>
+            <td>{{ row.shp_name or '-' }}</td>
+            <td>{{ row.item_count }}건</td>
+            <td>{{ row.CUSTOMER or '-' }}</td>
+            <td class="address-cell">{{ row.dlv_addr_1 or '-' }}</td>
+            <td class="{{ row.status_class }}">{{ row.ord_dlv_status }}</td>
+            <td><button type="button" class="detail-button" data-order-code="{{ row.ord_code }}">보기</button></td>
+            {% endif %}
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="{% if reservation_mode %}9{% else %}8{% endif %}" class="empty">표시할 데이터가 없습니다.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
