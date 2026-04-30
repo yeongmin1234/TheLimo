@@ -31,6 +31,8 @@ fi
 python3 -m venv venv
 ./venv/bin/pip install --upgrade pip
 ./venv/bin/pip install -r requirements.txt
+export PATH="$PROJECT_DIR/venv/bin:$PATH"
+echo "uvicorn: $(command -v uvicorn)"
 
 chmod +x deploy/install_limo_service.sh
 bash deploy/install_limo_service.sh "$PROJECT_DIR"
