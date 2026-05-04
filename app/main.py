@@ -70,7 +70,8 @@ async def lifespan(app: FastAPI):
     # Shutdown: 커넥션 풀 종료
     await close_db_pool()
 
-app = FastAPI(lifespan=lifespan)
+APP_ROOT_PATH = os.getenv("APP_ROOT_PATH", "/delivery")
+app = FastAPI(lifespan=lifespan, root_path=APP_ROOT_PATH)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 

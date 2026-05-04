@@ -1,24 +1,25 @@
 <!DOCTYPE html>
 <html lang="ko">
+{% set root_path = request.scope.get("root_path", "").rstrip("/") %}
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}배송 대시보드{% endblock %}</title>
     {% block head_extra %}{% endblock %}
-    <link rel="stylesheet" href="/static/css/style.css?v=20260429-6">
-    <script src="/static/js/main.js?v=20260429-6" defer></script>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}?v=20260429-6">
+    <script src="{{ url_for('static', path='js/main.js') }}?v=20260429-6" defer></script>
 </head>
-<body>
+<body data-root-path="{{ root_path }}">
 <div class="page">
     <header class="page-header">
         <h1>{% block heading %}{% endblock %}</h1>
     </header>
 
     <div class="nav">
-        <a href="/" class="{% if active_page == 'home' %}active{% endif %}">메인</a>
-        <a href="/progress" class="{% if active_page == 'progress' %}active{% endif %}">진행중 전체</a>
-        <a href="/completed" class="{% if active_page == 'completed' %}active{% endif %}">완료 전체</a>
-        <a href="/cancelled" class="{% if active_page == 'cancelled' %}active{% endif %}">취소 목록</a>
+        <a href="{{ root_path }}/" class="{% if active_page == 'home' %}active{% endif %}">메인</a>
+        <a href="{{ root_path }}/progress" class="{% if active_page == 'progress' %}active{% endif %}">진행중 전체</a>
+        <a href="{{ root_path }}/completed" class="{% if active_page == 'completed' %}active{% endif %}">완료 전체</a>
+        <a href="{{ root_path }}/cancelled" class="{% if active_page == 'cancelled' %}active{% endif %}">취소 목록</a>
     </div>
 
     {% if cache_key %}

@@ -5,9 +5,9 @@
 
 {% block content %}
     <div class="subnav" aria-label="진행중 구분">
-        <a href="/progress" class="{% if progress_tab == 'all' %}active{% endif %}">전체</a>
-        <a href="/progress/walk-in" class="{% if progress_tab == 'walk_in' %}active{% endif %}">현장구매</a>
-        <a href="/progress/reserved" class="{% if progress_tab == 'reserved' %}active{% endif %}">예약</a>
+        <a href="{{ root_path }}/progress" class="{% if progress_tab == 'all' %}active{% endif %}">전체</a>
+        <a href="{{ root_path }}/progress/walk-in" class="{% if progress_tab == 'walk_in' %}active{% endif %}">현장구매</a>
+        <a href="{{ root_path }}/progress/reserved" class="{% if progress_tab == 'reserved' %}active{% endif %}">예약</a>
     </div>
     <div class="section full">
         {% set status_class = "status-progress" %}

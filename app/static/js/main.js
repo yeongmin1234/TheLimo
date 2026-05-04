@@ -7,6 +7,11 @@ function escapeHTML(value) {
         .replace(/'/g, "&#039;");
 }
 
+function appUrl(path) {
+    const rootPath = document.body?.dataset.rootPath || "";
+    return `${rootPath}${path}`;
+}
+
 function escapeCSS(value) {
     if (window.CSS && typeof window.CSS.escape === "function") {
         return window.CSS.escape(value);
@@ -30,7 +35,7 @@ function openDetail(ordCode) {
         backdrop.classList.add("open");
     }
 
-    fetch(`/api/order/${encodeURIComponent(ordCode)}`)
+    fetch(appUrl(`/api/order/${encodeURIComponent(ordCode)}`))
         .then((res) => {
             if (!res.ok) {
                 throw new Error("detail fetch failed");
@@ -176,7 +181,7 @@ function saveTrackingNumber(event) {
         message.textContent = "";
     }
 
-    fetch(`/api/order/${encodeURIComponent(ordCode)}/tracking`, {
+    fetch(appUrl(`/api/order/${encodeURIComponent(ordCode)}/tracking`), {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -309,7 +314,7 @@ function saveInlineTrackingNumber(event) {
         message.textContent = "";
     }
 
-    fetch(`/api/order/${encodeURIComponent(ordCode)}/item/${encodeURIComponent(saleId)}/tracking`, {
+    fetch(appUrl(`/api/order/${encodeURIComponent(ordCode)}/item/${encodeURIComponent(saleId)}/tracking`), {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -389,7 +394,7 @@ function saveReservationDate(event) {
         button.textContent = "저장 중";
     }
 
-    fetch(`/api/order/${encodeURIComponent(ordCode)}/reservation`, {
+    fetch(appUrl(`/api/order/${encodeURIComponent(ordCode)}/reservation`), {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -433,7 +438,7 @@ function closePanel() {
 }
 
 function refreshCache(cacheKey) {
-    fetch(`/refresh-cache/${encodeURIComponent(cacheKey)}`)
+    fetch(appUrl(`/refresh-cache/${encodeURIComponent(cacheKey)}`))
         .then((res) => res.json())
         .then((data) => {
             if (data.ok) {
