@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}취소 목록{% endblock %}
+{% block heading %}취소 목록{% endblock %}
+
+{% block content %}
+    <div class="section full">
+        {% set row_class = "row-cancel" %}
+        {% set status_class = "status-cancel" %}
+        {% include "order_table.html" %}
+    </div>
+{% endblock %}

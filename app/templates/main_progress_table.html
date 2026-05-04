@@ -1,0 +1,60 @@
+<table>
+    <thead>
+        <tr>
+            <th>예약일</th>
+            <th>주문일</th>
+            <th>매장명</th>
+            {% if reservation_mode %}
+            <th>상품명</th>
+            {% endif %}
+            <th>상품 수</th>
+            {% if reservation_mode %}
+            <th>연락처</th>
+            {% endif %}
+            <th>주문자</th>
+            <th>{% if reservation_mode %}운송장번호{% else %}상태{% endif %}</th>
+            <th>상세</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in rows %}
+        <tr class="order-row{% if row.row_class %} {{ row.row_class }}{% endif %}" data-order-code="{{ row.ord_code }}" data-sale-id="{{ row.sale_id or '' }}">
+            <td>
+                <div class="reservation-display" data-order-code="{{ row.ord_code }}">
+                    {% if row.reservation_date %}
+                        <span class="reservation-date">{{ row.reservation_date }}</span>
+                    {% else %}
+                        <span>-</span>
+                    {% endif %}
+                </div>
+            </td>
+            <td>{{ row.ord_date|string|replace(" 00:00:00", "")|truncate(10, True, "") }}</td>
+            <td>{{ row.shp_name }}</td>
+            {% if reservation_mode %}
+            <td class="product-cell">{{ row.gd_name or '-' }}</td>
+            {% endif %}
+            <td>{{ row.item_count }}건</td>
+            {% if reservation_mode %}
+            <td>{{ row.CUSTOMER_MOBILE or row.dlv_tel_1 or '-' }}</td>
+            {% endif %}
+            <td>{{ row.CUSTOMER }}</td>
+            {% if reservation_mode %}
+            <td>
+                <form class="inline-tracking-form" data-order-code="{{ row.ord_code }}" data-sale-id="{{ row.sale_id }}">
+                    <input type="text" name="tracking_number" maxlength="30" value="" aria-label="운송장번호">
+                    <button type="submit">저장</button>
+                    <div class="inline-message" aria-live="polite"></div>
+                </form>
+            </td>
+            {% else %}
+            <td class="{{ row.status_class }}">{{ row.ord_dlv_status }}</td>
+            {% endif %}
+            <td><button type="button" class="detail-button" data-order-code="{{ row.ord_code }}">보기</button></td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="{% if reservation_mode %}9{% else %}7{% endif %}" class="empty">표시할 데이터가 없습니다.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

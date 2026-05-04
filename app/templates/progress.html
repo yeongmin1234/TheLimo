@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}진행중 목록{% endblock %}
+{% block heading %}진행중 목록{% endblock %}
+
+{% block content %}
+    <div class="subnav" aria-label="진행중 구분">
+        <a href="/progress" class="{% if progress_tab == 'all' %}active{% endif %}">전체</a>
+        <a href="/progress/walk-in" class="{% if progress_tab == 'walk_in' %}active{% endif %}">현장구매</a>
+        <a href="/progress/reserved" class="{% if progress_tab == 'reserved' %}active{% endif %}">예약</a>
+    </div>
+    <div class="section full">
+        {% set status_class = "status-progress" %}
+        {% set reservation_mode = progress_tab == "reserved" %}
+        {% include "order_table.html" %}
+    </div>
+{% endblock %}
