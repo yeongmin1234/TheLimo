@@ -3,7 +3,18 @@ set -euo pipefail
 
 APP_HOST="${APP_HOST:-127.0.0.1}"
 APP_PORT="${APP_PORT:-8000}"
-NGINX_CONF_PATH="/etc/nginx/conf.d/thelimo.conf"
+PUBLIC_PORT="${PUBLIC_PORT:-8001}"
+NGINX_CONF_PATH="/etc/nginx/conf.d/thelimo-dashboard-${PUBLIC_PORT}.conf"
+
+for port in "$APP_PORT" "$PUBLIC_PORT"; do
+  case "$port" in
+    80|8080)
+      echo "Refusing to use protected SCM port: $port" >&2
+      echo "SCM owns 80 and 8080 on 192.168.222.110. Use another port." >&2
+      exit 1
+      ;;
+  esac
+done
 
 if ! command -v nginx >/dev/null 2>&1; then
   if command -v dnf >/dev/null 2>&1; then
@@ -18,7 +29,7 @@ fi
 
 cat > "$NGINX_CONF_PATH" <<EOF
 server {
-    listen 80;
+    listen ${PUBLIC_PORT};
     server_name _;
 
     location / {
@@ -34,14 +45,14 @@ EOF
 nginx -t
 
 systemctl enable nginx
-systemctl restart nginx
+systemctl reload nginx || systemctl restart nginx
 
 if command -v firewall-cmd >/dev/null 2>&1 && systemctl is-active --quiet firewalld; then
-  firewall-cmd --add-service=http --permanent
+  firewall-cmd --add-port=${PUBLIC_PORT}/tcp --permanent
   firewall-cmd --reload
 fi
 
 echo
 echo "Nginx proxy installed: $NGINX_CONF_PATH"
 echo "App target: http://${APP_HOST}:${APP_PORT}"
-echo "Try: curl http://127.0.0.1/ | head"
+echo "Public URL: http://SERVER_IP:${PUBLIC_PORT}/"

@@ -4,6 +4,15 @@ set -euo pipefail
 PROJECT_DIR="${1:-/root/TheLimo}"
 SERVICE_PATH="/etc/systemd/system/limo.service"
 SERVICE_TEMPLATE="$PROJECT_DIR/deploy/limo.service"
+LIMO_PORT="${LIMO_PORT:-8000}"
+
+case "$LIMO_PORT" in
+  80|8080)
+    echo "Refusing to use protected SCM port: $LIMO_PORT" >&2
+    echo "Use a separate port such as 8000 or 8001." >&2
+    exit 1
+    ;;
+esac
 
 if [[ ! -d "$PROJECT_DIR" ]]; then
   echo "Project directory not found: $PROJECT_DIR" >&2
@@ -30,7 +39,7 @@ fi
 cd "$PROJECT_DIR"
 cp deploy/limo.service "$SERVICE_PATH"
 sed -i "s|^WorkingDirectory=.*|WorkingDirectory=$PROJECT_DIR|" "$SERVICE_PATH"
-sed -i "s|^ExecStart=.*|ExecStart=$UVICORN_PATH app.main:app --host 0.0.0.0 --port 8000|" "$SERVICE_PATH"
+sed -i "s|^ExecStart=.*|ExecStart=$UVICORN_PATH app.main:app --host 0.0.0.0 --port $LIMO_PORT|" "$SERVICE_PATH"
 
 systemctl daemon-reload
 systemctl enable limo
@@ -40,4 +49,5 @@ systemctl status limo --no-pager
 
 echo
 echo "Service installed: $SERVICE_PATH"
+echo "App URL: http://SERVER_IP:${LIMO_PORT}/"
 echo "Logs: journalctl -u limo -f"
